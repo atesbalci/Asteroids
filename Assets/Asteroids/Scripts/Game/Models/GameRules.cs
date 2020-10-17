@@ -7,5 +7,6 @@
         public const float DampeningPower = 2f;
         public const float MaxVelocity = 4f;
         public const float MaxVelocitySqr = MaxVelocity * MaxVelocity;
+        public const float BoundOffset = 1f;
     }
 }

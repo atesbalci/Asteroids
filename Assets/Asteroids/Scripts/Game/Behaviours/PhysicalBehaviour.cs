@@ -2,7 +2,8 @@
 
 namespace Asteroids.Game.Behaviours
 {
-    public class PhysicalBehaviour : BaseBehaviour
+    [RequireComponent(typeof(Rigidbody2D))]
+    public abstract class PhysicalBehaviour : BaseBehaviour
     {
         private Collider _collider;
         private Rigidbody2D _rigidbody;

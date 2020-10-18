@@ -3,11 +3,11 @@ using System.Collections.Generic;
 
 namespace Asteroids.Scripts.Game.Models.BoundedObjects
 {
-    public class BoundaryData : IEnumerable<IBoundedObject>
+    public class BoundedObjectsData : IBoundedObjectsList
     {
         private readonly ICollection<IBoundedObject> _objects;
 
-        public BoundaryData()
+        public BoundedObjectsData()
         {
             _objects = new LinkedList<IBoundedObject>();
         }

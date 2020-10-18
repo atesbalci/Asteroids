@@ -7,12 +7,12 @@ namespace Asteroids.Scripts.Game.Controllers
 {
     public class BoundariesController : IFixedTickable
     {
-        private readonly BoundaryData _boundaryData;
+        private readonly IBoundedObjectsList _boundedObjectsList;
         private readonly Bounds _bounds;
         
-        public BoundariesController(BoundaryData boundaryData)
+        public BoundariesController(IBoundedObjectsList boundedObjectsList)
         {
-            _boundaryData = boundaryData;
+            _boundedObjectsList = boundedObjectsList;
 
             var camera = Camera.main;
             if (camera != null)
@@ -32,7 +32,7 @@ namespace Asteroids.Scripts.Game.Controllers
             var max = bounds.max;
             var min = bounds.min;
             var size = bounds.size;
-            foreach (var obj in _boundaryData)
+            foreach (var obj in _boundedObjectsList)
             {
                 if (!bounds.Contains(obj.Position))
                 {

@@ -1,62 +1,103 @@
 ﻿using System;
-using Asteroids.Game.Behaviours.Asteroids;
+using Asteroids.Game.Behaviours.Asteroids.Managers;
 using Asteroids.Game.Behaviours.Players;
+using Asteroids.Helpers.Timing;
+using Asteroids.Scripts.Game.Models;
 using Asteroids.Scripts.Game.Models.Asteroids;
 using Asteroids.Scripts.Game.Models.GameState;
+using Asteroids.Scripts.Game.Models.Input;
 using Asteroids.Scripts.Game.Models.Players;
-using UnityEngine;
-using Zenject;
 using Random = UnityEngine.Random;
 
 namespace Asteroids.Scripts.Game.Controllers
 {
-    public class GameController : ITickable, IDisposable
+    public class GameController : IDisposable
     {
-        private readonly AsteroidBehaviour.Pool _asteroidPool;
+        private readonly IAsteroidsManager _asteroidsManager;
         private readonly Player _player;
         private readonly GameStateData _gameStateData;
-        private readonly PlayerBehaviour _playerBehaviour;
+        private readonly IPlayerBehaviour _playerBehaviour;
+        private readonly ITimingManager _timingManager;
+        private readonly IGameInput _gameInput;
 
-        private float _timeOfLastSpawn;
-
-        public GameController(AsteroidBehaviour.Pool asteroidPool, Player player, GameStateData gameStateData,
-            PlayerBehaviour playerBehaviour)
+        public GameController(IAsteroidsManager asteroidsManager, Player player, GameStateData gameStateData,
+            IPlayerBehaviour playerBehaviour, ITimingManager timingManager, IGameInput gameInput)
         {
-            _asteroidPool = asteroidPool;
+            _asteroidsManager = asteroidsManager;
             _player = player;
             _gameStateData = gameStateData;
             _playerBehaviour = playerBehaviour;
+            _timingManager = timingManager;
+            _gameInput = gameInput;
 
             _player.Death += OnDeath;
+            _asteroidsManager.AsteroidDespawned += OnAsteroidDespawn;
+            _gameInput.RestartPressed += OnRestartPressed;
             
-            Respawn();
+            StartGame();
         }
 
         public void Dispose()
         {
             _player.Death -= OnDeath;
+            _asteroidsManager.AsteroidDespawned -= OnAsteroidDespawn;
+            _gameInput.RestartPressed -= OnRestartPressed;
         }
 
-        public void Tick()
+        private void OnRestartPressed()
         {
-            var time = Time.time;
-            if (time - _timeOfLastSpawn > 5f)
+            StartGame();
+        }
+
+        private void OnAsteroidDespawn(Asteroid asteroid)
+        {
+            _gameStateData.Score += GameRules.GetSizePoints(asteroid.Size);
+            if (_asteroidsManager.SpawnedAsteroidCount <= 0)
             {
-                _timeOfLastSpawn = time;
-                _asteroidPool.Spawn().Bind(new Asteroid(2, Random.insideUnitCircle.normalized, 2f), Vector2.zero);
-            } 
+                SpawnAsteroids();
+            }
+        }
+
+        private void StartGame()
+        {
+            _gameStateData.Reset();
+            _asteroidsManager.Clear();
+            Respawn();
+            SpawnAsteroids();
+        }
+
+        private void SpawnAsteroid()
+        {
+            var position = _playerBehaviour.Position +
+                           Random.insideUnitCircle.normalized * GameRules.AsteroidSpawnDistance;
+            var direction = Random.insideUnitCircle.normalized;
+            _asteroidsManager.Spawn(
+                new Asteroid(2, direction, GameRules.GenerateAsteroidVelocity()),
+                position);
+        }
+
+        private void SpawnAsteroids()
+        {
+            for (int i = 0; i < GameRules.AsteroidsPerSpawn; i++)
+            {
+                SpawnAsteroid();
+            }
         }
 
         private void OnDeath()
         {
             _gameStateData.DecrementLife();
-            Respawn();
+            _playerBehaviour.SetActive(false);
+            if (_gameStateData.Lives > 0)
+            {
+                _timingManager.Delay(TimeSpan.FromSeconds(1), Respawn);
+            }
         }
 
         private void Respawn()
         {
-            _playerBehaviour.Transform.position = Vector3.zero;
-            _playerBehaviour.Transform.rotation = Quaternion.identity;
+            _playerBehaviour.SetActive(true);
+            _playerBehaviour.ResetToSpawn();
         }
     }
 }

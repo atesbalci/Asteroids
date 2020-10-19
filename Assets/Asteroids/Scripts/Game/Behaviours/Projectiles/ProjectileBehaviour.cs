@@ -8,6 +8,7 @@ namespace Asteroids.Game.Behaviours.Projectiles
     {
         private Pool _pool;
         private Projectile _projectile;
+        private bool _dead;
 
         [Inject]
         public void Initialize(Pool pool)
@@ -17,6 +18,7 @@ namespace Asteroids.Game.Behaviours.Projectiles
         
         public void Fire(Projectile projectile)
         {
+            _dead = false;
             _projectile = projectile;
             Transform.position = projectile.Origin;
             Rigidbody.velocity = projectile.Direction * projectile.Velocity;
@@ -32,7 +34,11 @@ namespace Asteroids.Game.Behaviours.Projectiles
 
         private void Die()
         {
-            _pool.Despawn(this);
+            if (!_dead)
+            {
+                _pool.Despawn(this);
+                _dead = true;
+            }
         }
 
         private void OnTriggerEnter2D(Collider2D other)

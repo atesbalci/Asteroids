@@ -1,11 +1,15 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
+using Zenject;
 
 namespace Asteroids.Scripts.Game.Models.Input.Impl
 {
     using Input = UnityEngine.Input;
     
-    public class SimpleGameInput : IGameInput
+    public class SimpleGameInput : IGameInput, ITickable
     {
+        public event Action RestartPressed;
+        
         public bool IsLeftPressed()
         {
             return Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow);
@@ -24,6 +28,14 @@ namespace Asteroids.Scripts.Game.Models.Input.Impl
         public bool IsForwardPressed()
         {
             return Input.GetKey(KeyCode.W) || Input.GetKey(KeyCode.UpArrow);
+        }
+
+        public void Tick()
+        {
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                RestartPressed?.Invoke();
+            }
         }
     }
 }

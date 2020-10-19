@@ -6,9 +6,9 @@ using Asteroids.Scripts.Game.Models.Projectile;
 using UnityEngine;
 using Zenject;
 
-namespace Asteroids.Game.Behaviours.Players
+namespace Asteroids.Game.Behaviours.Players.Impl
 {
-    public class PlayerBehaviour : PhysicalBehaviour, IHittable
+    public class PlayerBehaviour : PhysicalBehaviour, IPlayerBehaviour, IHittable
     {
         private Player _player;
         private IGameInput _input;
@@ -86,5 +86,18 @@ namespace Asteroids.Game.Behaviours.Players
         {
             _player.Hit();
         }
+
+        public void ResetToSpawn()
+        {
+            Transform.position = Vector3.zero;
+            Transform.rotation = Quaternion.identity;
+        }
+
+        public void SetActive(bool b)
+        {
+            gameObject.SetActive(b);
+        }
+
+        public Vector2 Position => Transform.position;
     }
 }

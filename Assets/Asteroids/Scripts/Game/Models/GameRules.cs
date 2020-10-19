@@ -14,12 +14,28 @@ namespace Asteroids.Scripts.Game.Models
         public const float ProjectileMaxDistance = 6f;
         public const float FireCooldown = 0.4f;
         public const float AsteroidSplitDirectionRandomization = 60f;
+        public const float AsteroidSpawnDistance = 5f;
+        public const int AsteroidsPerSpawn = 4;
 
-        private static readonly float[] AsteroidSizeScales = { 0.5f, 1f, 2f };
+        private const float MinAsteroidVelocity = 0.5f;
+        private const float MaxAsteroidVelocity = 2f;
+
+        private static readonly float[] AsteroidSizeScales = {0.35f, 0.7f, 1.4f};
+        private static readonly int[] AsteroidSizePoints = {40, 30, 20};
 
         public static float GetSizeScale(int size)
         {
             return AsteroidSizeScales[Mathf.Clamp(size, 0, AsteroidSizeScales.Length - 1)];
+        }
+        
+        public static int GetSizePoints(int size)
+        {
+            return AsteroidSizePoints[Mathf.Clamp(size, 0, AsteroidSizeScales.Length - 1)];
+        }
+
+        public static float GenerateAsteroidVelocity()
+        {
+            return Random.Range(MinAsteroidVelocity, MaxAsteroidVelocity);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Asteroids.Scripts.Game.Models;
+﻿using Asteroids.Game.Behaviours.Asteroids.Managers;
+using Asteroids.Scripts.Game.Models;
 using Asteroids.Scripts.Game.Models.Asteroids;
 using Asteroids.Scripts.Game.Models.Projectile;
 using UnityEngine;
@@ -8,34 +9,35 @@ namespace Asteroids.Game.Behaviours.Asteroids
 {
     public class AsteroidBehaviour : PhysicalBehaviour, IHittable
     {
-        private Pool _pool;
-        private Asteroid _asteroid;
+        private IAsteroidsManager _asteroidsManager;
+        
+        public Asteroid Asteroid { get; private set; }
 
         [Inject]
-        public void Initialize(Pool pool)
+        public void Initialize(IAsteroidsManager asteroidsManager)
         {
-            _pool = pool;
+            _asteroidsManager = asteroidsManager;
         }
         
         public void Bind(Asteroid asteroid, Vector2 origin)
         {
-            _asteroid = asteroid;
+            Asteroid = asteroid;
             Transform.position = origin;
-            Rigidbody.velocity = _asteroid.Velocity * _asteroid.Direction;
-            Transform.localScale = Vector3.one * GameRules.GetSizeScale(_asteroid.Size);
+            Rigidbody.velocity = Asteroid.Velocity * Asteroid.Direction;
+            Transform.localScale = Vector3.one * GameRules.GetSizeScale(Asteroid.Size);
         }
 
         public void Die()
         {
-            _pool.Despawn(this);
+            _asteroidsManager.Despawn(this);
         }
         
         public void Hit()
         {
             Die();
-            foreach (var asteroid in _asteroid.Hit())
+            foreach (var asteroid in Asteroid.Hit())
             {
-                _pool.Spawn().Bind(asteroid, Transform.position);
+                _asteroidsManager.Spawn(asteroid, Transform.position);
             }
         }
 

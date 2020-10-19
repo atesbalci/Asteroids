@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 
-namespace Asteroids.Scripts.Game.Models.BoundedObjects
+namespace Asteroids.Scripts.Game.Models.BoundedObjects.Impl
 {
     public class BoundedObjectsData : IBoundedObjectsList
     {

@@ -6,21 +6,26 @@ using Zenject;
 
 namespace Asteroids.Scripts.Game.Controllers
 {
-    public class BoundariesController : IFixedTickable
+    public class BoundariesController : IFixedTickable, IInitializable
     {
         private readonly IBoundedObjectsList _boundedObjectsList;
-        private readonly Bounds _bounds;
+        private readonly IBoundProvider _boundProvider;
+        private Bounds _bounds;
         
         public BoundariesController(IBoundedObjectsList boundedObjectsList, IBoundProvider boundProvider)
         {
             _boundedObjectsList = boundedObjectsList;
-            
-            Vector3 size = boundProvider.GetWorldPosition(new Vector3(1f, 1f)) -
-                       boundProvider.GetWorldPosition(new Vector3(-1f, -1f));
+            _boundProvider = boundProvider;
+        }
+
+        public void Initialize()
+        {
+            Vector3 size = _boundProvider.GetWorldPosition(new Vector3(1f, 1f)) -
+                           _boundProvider.GetWorldPosition(new Vector3(-1f, -1f));
             size.z = 1f;
             _bounds = new Bounds(Vector3.zero, size * 0.5f + new Vector3(GameRules.BoundOffset, GameRules.BoundOffset));
         }
-        
+
         public void FixedTick()
         {
             var bounds = _bounds;

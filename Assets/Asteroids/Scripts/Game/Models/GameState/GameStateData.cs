@@ -7,6 +7,7 @@ namespace Asteroids.Scripts.Game.Models.GameState
         public event Action GameOver;
         public event Action<int> LivesChanged;
         public event Action<long> ScoreChanged;
+        public event Action OnReset;
         
         private long _score;
         
@@ -30,8 +31,9 @@ namespace Asteroids.Scripts.Game.Models.GameState
 
         public void Reset()
         {
-            Lives = 3;
+            Lives = GameRules.StartLives;
             Score = 0;
+            OnReset?.Invoke();
             LivesChanged?.Invoke(Lives);
         }
 

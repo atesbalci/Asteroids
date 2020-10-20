@@ -1,11 +1,15 @@
 ﻿using System;
 using Asteroids.Game.Behaviours.Asteroids.Managers;
+using Asteroids.Game.Behaviours.Opponents;
 using Asteroids.Game.Behaviours.Players;
+using Asteroids.Helpers.Bounds;
+using Asteroids.Helpers.Collections;
 using Asteroids.Helpers.Timing;
 using Asteroids.Scripts.Game.Models;
 using Asteroids.Scripts.Game.Models.Asteroids;
 using Asteroids.Scripts.Game.Models.GameState;
 using Asteroids.Scripts.Game.Models.Input;
+using Asteroids.Scripts.Game.Models.Opponents;
 using Asteroids.Scripts.Game.Models.Players;
 using Random = UnityEngine.Random;
 
@@ -19,9 +23,14 @@ namespace Asteroids.Scripts.Game.Controllers
         private readonly IPlayerBehaviour _playerBehaviour;
         private readonly ITimingManager _timingManager;
         private readonly IGameInput _gameInput;
+        private readonly IOpponentBehaviour _opponentBehaviour;
+        private readonly IBoundProvider _boundProvider;
+
+        private IDisposable _opponentSpawnDisposable;
 
         public GameController(IAsteroidsManager asteroidsManager, Player player, GameStateData gameStateData,
-            IPlayerBehaviour playerBehaviour, ITimingManager timingManager, IGameInput gameInput)
+            IPlayerBehaviour playerBehaviour, ITimingManager timingManager, IGameInput gameInput,
+            IOpponentBehaviour opponentBehaviour, IBoundProvider boundProvider)
         {
             _asteroidsManager = asteroidsManager;
             _player = player;
@@ -29,11 +38,13 @@ namespace Asteroids.Scripts.Game.Controllers
             _playerBehaviour = playerBehaviour;
             _timingManager = timingManager;
             _gameInput = gameInput;
+            _opponentBehaviour = opponentBehaviour;
+            _boundProvider = boundProvider;
 
             _player.Death += OnDeath;
             _asteroidsManager.AsteroidDespawned += OnAsteroidDespawn;
             _gameInput.RestartPressed += OnRestartPressed;
-            
+
             StartGame();
         }
 
@@ -42,6 +53,7 @@ namespace Asteroids.Scripts.Game.Controllers
             _player.Death -= OnDeath;
             _asteroidsManager.AsteroidDespawned -= OnAsteroidDespawn;
             _gameInput.RestartPressed -= OnRestartPressed;
+            _opponentSpawnDisposable?.Dispose();
         }
 
         private void OnRestartPressed()
@@ -51,6 +63,7 @@ namespace Asteroids.Scripts.Game.Controllers
 
         private void OnAsteroidDespawn(Asteroid asteroid)
         {
+            if (_gameStateData.Lives <= 0) return;
             _gameStateData.Score += GameRules.GetSizePoints(asteroid.Size);
             if (_asteroidsManager.SpawnedAsteroidCount <= 0)
             {
@@ -62,8 +75,34 @@ namespace Asteroids.Scripts.Game.Controllers
         {
             _gameStateData.Reset();
             _asteroidsManager.Clear();
+            _opponentBehaviour.Deactivate();
             Respawn();
             SpawnAsteroids();
+            SetUpNextOpponentSpawn();
+        }
+
+        private void SetUpNextOpponentSpawn()
+        {
+            _opponentSpawnDisposable?.Dispose();
+            _opponentSpawnDisposable = _timingManager.Delay(
+                TimeSpan.FromSeconds(Random.Range(GameRules.OpponentSpawnMinDuration,
+                    GameRules.OpponentSpawnMaxDuration)),
+                () =>
+                {
+                    var spawn = GameRules.OpponentSpawns.GetRandom();
+                    var opponent = new Opponent(spawn.FlightDirection);
+                    _opponentBehaviour.Bind(opponent, _boundProvider.GetWorldPosition(spawn.NormalizedLocation));
+                    opponent.Death += OnOpponentDeath;
+                });
+        }
+
+        private void OnOpponentDeath()
+        {
+            SetUpNextOpponentSpawn();
+            if (_gameStateData.Lives > 0)
+            {
+                _gameStateData.Score += GameRules.OpponentKillPoints;
+            }
         }
 
         private void SpawnAsteroid()

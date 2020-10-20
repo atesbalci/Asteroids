@@ -44,6 +44,7 @@ namespace Asteroids.Game.Behaviours.Asteroids
         private void OnCollisionEnter2D(Collision2D other)
         {
             other.gameObject.GetComponent<IHittable>()?.Hit();
+            Hit();
         }
 
         public class Pool : MonoMemoryPool<AsteroidBehaviour> { }

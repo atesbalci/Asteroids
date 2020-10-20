@@ -1,4 +1,5 @@
-﻿using Asteroids.Scripts.Game.Models;
+﻿using Asteroids.Helpers.Bounds;
+using Asteroids.Scripts.Game.Models;
 using Asteroids.Scripts.Game.Models.BoundedObjects;
 using UnityEngine;
 using Zenject;
@@ -10,20 +11,14 @@ namespace Asteroids.Scripts.Game.Controllers
         private readonly IBoundedObjectsList _boundedObjectsList;
         private readonly Bounds _bounds;
         
-        public BoundariesController(IBoundedObjectsList boundedObjectsList)
+        public BoundariesController(IBoundedObjectsList boundedObjectsList, IBoundProvider boundProvider)
         {
             _boundedObjectsList = boundedObjectsList;
-
-            var camera = Camera.main;
-            if (camera != null)
-            {
-                var pos = camera.transform.position;
-                pos.z = 0f;
-                var size = camera.ViewportToWorldPoint(new Vector3(1f, 1f)) -
-                           camera.ViewportToWorldPoint(new Vector3(-1f, -1f));
-                size.z = 1f;
-                _bounds = new Bounds(pos, size * 0.5f + new Vector3(GameRules.BoundOffset, GameRules.BoundOffset));
-            }
+            
+            Vector3 size = boundProvider.GetWorldPosition(new Vector3(1f, 1f)) -
+                       boundProvider.GetWorldPosition(new Vector3(-1f, -1f));
+            size.z = 1f;
+            _bounds = new Bounds(Vector3.zero, size * 0.5f + new Vector3(GameRules.BoundOffset, GameRules.BoundOffset));
         }
         
         public void FixedTick()

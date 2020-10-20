@@ -1,8 +1,12 @@
 ﻿using Asteroids.Game.Behaviours.Asteroids;
 using Asteroids.Game.Behaviours.Asteroids.Managers.Impl;
+using Asteroids.Game.Behaviours.Opponents;
+using Asteroids.Game.Behaviours.Opponents.Impl;
 using Asteroids.Game.Behaviours.Players;
 using Asteroids.Game.Behaviours.Players.Impl;
 using Asteroids.Game.Behaviours.Projectiles;
+using Asteroids.Helpers.Bounds;
+using Asteroids.Helpers.Bounds.Impl;
 using Asteroids.Helpers.Timing;
 using Asteroids.Helpers.Timing.Impl;
 using Asteroids.Scripts.Game.Controllers;
@@ -21,6 +25,7 @@ namespace Asteroids.Game.Injection
         [SerializeField] private GameObject _projectilePrefab;
         [SerializeField] private GameObject _asteroidPrefab;
         [SerializeField] private PlayerBehaviour _playerBehaviour;
+        [SerializeField] private OpponentBehaviour _opponentBehaviour;
         
         [SerializeField] private Transform _projectilesParent;
         [SerializeField] private Transform _asteroidsParent;
@@ -45,11 +50,13 @@ namespace Asteroids.Game.Injection
         {
             Container.BindInterfacesAndSelfTo<SimpleGameInput>().AsSingle(); // Binds IGameInput
             Container.Bind<ITimingManager>().To<TweenTimingManager>().AsSingle();
+            Container.Bind<IBoundProvider>().To<BoundProvider>().AsSingle();
         }
 
         private void BindBehaviours()
         {
             Container.BindInstance<IPlayerBehaviour>(_playerBehaviour).AsSingle();
+            Container.BindInstance<IOpponentBehaviour>(_opponentBehaviour).AsSingle();
             Container.BindInterfacesAndSelfTo<PoolAsteroidsManager>().AsSingle(); // Binds IAsteroidsManager
         }
 
@@ -66,7 +73,7 @@ namespace Asteroids.Game.Injection
                 .FromComponentInNewPrefab(_projectilePrefab)
                 .UnderTransform(_projectilesParent);
             Container.BindMemoryPool<AsteroidBehaviour, AsteroidBehaviour.Pool>()
-                .WithInitialSize(0)
+                .WithInitialSize(0) // This is to avoid a cyclic dependency error :)
                 .FromComponentInNewPrefab(_asteroidPrefab)
                 .UnderTransform(_asteroidsParent);
         }

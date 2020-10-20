@@ -1,0 +1,27 @@
+{
+    "name": "Tests",
+    "references": [
+        "GUID:8614f9559e6ace14683bd3714a6f9f6a",
+        "GUID:fd79a4d663ab8cd4c85180afdbc108d2",
+        "GUID:57b9a0b722c525f4fa71ca3cc7f191c6",
+        "GUID:27619889b8ba8c24980f49ee34dbb44a",
+        "GUID:0acc523941302664db1f4e527237feb3",
+        "GUID:5f7eb2d9a3b919a4cae7734d68ba087c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "NSubstitute.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -24,8 +24,8 @@ namespace Asteroids.Scripts.Game.Models.Asteroids
                 var retval =  new Asteroid[2];
                 for (int i = 0; i < 2; i++)
                 {
-                    var angle = Random.Range(-GameRules.AsteroidSplitDirectionRandomization,
-                        GameRules.AsteroidSplitDirectionRandomization);
+                    var angle = Random.Range(-GameRules.AsteroidSplitDirectionRandomizationAngle,
+                        GameRules.AsteroidSplitDirectionRandomizationAngle);
                     retval[i] = new Asteroid(size, Quaternion.AngleAxis(angle, Vector3.back) * Direction, Velocity);
                 }
 
